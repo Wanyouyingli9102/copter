@@ -175,6 +175,11 @@ Mode *Copter::mode_from_mode_num(const Mode::Number mode)
             break;
 #endif
 
+#if MODE_HANG_ENABLED == ENABLED
+        case Mode::Number::HANG:
+            ret = &mode_hang;
+            break;
+#endif
         default:
             break;
     }
