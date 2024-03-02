@@ -1023,6 +1023,10 @@ private:
 #if MODE_TURTLE_ENABLED == ENABLED
     ModeTurtle mode_turtle;
 #endif
+#if MODE_HANG_ENABLED == ENABLED
+    ModeHang mode_hang;
+#endif
+
 
     // mode.cpp
     Mode *mode_from_mode_num(const Mode::Number mode);

@@ -39,7 +39,7 @@ public:
         AUTOROTATE =   26,  // Autonomous autorotation
         AUTO_RTL =     27,  // Auto RTL, this is not a true mode, AUTO will report as this mode if entered to perform a DO_LAND_START Landing sequence
         TURTLE =       28,  // Flip over after crash
-
+        HANG =         29,  // Hang mode with force sensor
         // Mode number 127 reserved for the "drone show mode" in the Skybrush
         // fork at https://github.com/skybrush-io/ardupilot
     };
@@ -1509,6 +1509,32 @@ protected:
 
     const char *name() const override { return "STABILIZE"; }
     const char *name4() const override { return "STAB"; }
+
+private:
+
+};
+
+class ModeHang : public Mode {
+
+public:
+    // inherit constructor
+    using Mode::Mode;
+    Number mode_number() const override { return Number::HANG; }
+
+    virtual void run() override;
+
+    bool requires_GPS() const override { return false; }
+    bool has_manual_throttle() const override { return true; }
+    bool allows_arming(AP_Arming::Method method) const override { return true; };
+    bool is_autopilot() const override { return false; }
+    bool allows_save_trim() const override { return true; }
+    bool allows_autotune() const override { return true; }
+    bool allows_flip() const override { return true; }
+
+protected:
+
+    const char *name() const override { return "HANG"; }
+    const char *name4() const override { return "HANG"; }
 
 private:
 
