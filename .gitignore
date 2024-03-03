@@ -155,3 +155,4 @@ modules/esp_idf
 .vscode/settings.json
 modules/mavlink
 .vscode/settings.json
+modules/mavlink
