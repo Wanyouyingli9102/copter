@@ -160,7 +160,7 @@ protected:
     // return expected input throttle setting to hover:
     virtual float throttle_hover() const;
 
-    // Alt_Hold based flight mode states used in Alt_Hold, Loiter, and Sport
+    // Alt_Hold based flight mode states used in Alt_Hold, Loiter, and Sport,and Hang
     enum AltHoldModeState {
         AltHold_MotorStopped,
         AltHold_Takeoff,
