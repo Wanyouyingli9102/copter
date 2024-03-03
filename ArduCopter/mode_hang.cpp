@@ -34,8 +34,6 @@ void ModeHang::run()
     // gcs().send_text(MAV_SEVERITY_CRITICAL,"mode hang fly");  //地面站消息发送
     // get pilot desired lean angles
     float target_roll, target_pitch;
-    target_roll *=1.5;
-    target_pitch *=1.5;
     get_pilot_desired_lean_angles(target_roll, target_pitch, copter.aparm.angle_max, attitude_control->get_althold_lean_angle_max_cd());
 
     // get pilot's desired yaw rate
@@ -97,9 +95,14 @@ void ModeHang::run()
         pos_control->set_pos_target_z_from_climb_rate_cm(target_climb_rate);
         break;
     }
+    //for sensor
+    //in centi-degrees
+    target_roll *=5;
+    target_pitch *=5;
 
-    // call attitude controller
-    // This is not only a attidude controller,it can also control x y position!!!
+
+    //target_roll, target_pitch 作为目标姿态输入，默认遥控中位就是飞机水平
+    // call attitude controller 这是姿态，不是海拔！！！
     attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
 
     // run the vertical position controller and set output throttle
