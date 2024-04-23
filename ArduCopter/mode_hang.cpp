@@ -2,7 +2,7 @@
 #include <GCS_MAVLink/GCS.h>
 /*
  * Init and run calls for hang flight mode
- * Init and run calls for althold, flight mode
+ * changed from althold, flight mode
  * writer lqd
 */
 
@@ -21,6 +21,33 @@ bool ModeHang::init(bool ignore_checks)
 
     return true;
 }
+
+// get the deg of sensor in centi-degs and add to target
+void ModeHang::get_add_sensor_deg(float &roll_targ,float &pitch_targ)
+{
+
+    // throttle failsafe check
+    if (copter.failsafe.radio || !copter.ap.rc_receiver_present) {
+        roll_targ = 0.0;
+        pitch_targ = 0.0;
+        return;
+    }
+    //transform pilot's normalised roll or pitch stick input into a roll and pitch euler angle command
+    // read sensor deg pwm and convert
+    float roll_sensor_deg;
+    float pitch_sensor_deg;
+    //把下面这里改成读取串口读到的角度就行，赋值给roll_sensor_deg和pitch_sensor_deg
+    //rc_input_to_roll_pitch(channel_roll->get_control_in()*(1.0/ROLL_PITCH_YAW_INPUT_MAX), channel_pitch->get_control_in()*(1.0/ROLL_PITCH_YAW_INPUT_MAX), angle_max_cd * 0.01,  angle_limit_cd * 0.01, roll_out_deg, pitch_out_deg);
+
+    // Convert to centi-degrees
+    roll_sensor_deg *= 100.0;
+    pitch_sensor_deg *= 100.0;
+
+    // add to target
+    roll_targ  +=roll_sensor_deg;
+    pitch_targ +=pitch_sensor_deg;
+}
+
 
 // althold_run - runs the althold controller
 // should be called at 100hz or more
@@ -97,11 +124,13 @@ void ModeHang::run()
     }
     //for sensor
     //in centi-degrees
-    target_roll *=5;
-    target_pitch *=5;
+    // target_roll +=5;
+    // target_pitch +=5;
 
+    //add the deg from sensor
+    get_add_sensor_deg(target_roll,target_pitch);
 
-    //target_roll, target_pitch 作为目标姿态输入，默认遥控中位就是飞机水平
+    // target_roll, target_pitch 作为目标姿态输入，默认遥控中位就是飞机水平
     // call attitude controller 这是姿态，不是海拔！！！
     attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(target_roll, target_pitch, target_yaw_rate);
 

@@ -1522,6 +1522,7 @@ public:
     Number mode_number() const override { return Number::HANG; }
     bool init(bool ignore_checks) override;
     virtual void run() override;
+    virtual void get_add_sensor_deg(float &roll_targ,float &pitch_targ);
 
     bool requires_GPS() const override { return false; }
     bool has_manual_throttle() const override { return true; }
