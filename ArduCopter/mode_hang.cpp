@@ -51,7 +51,7 @@ void ModeHang::run()
 
     // apply SIMPLE mode transform to pilot inputs
     update_simple_mode();
-    
+    // gcs().send_text(MAV_SEVERITY_CRITICAL,"mode hang fly");  //地面站消息发送
     // get pilot desired lean angles
     float target_roll, target_pitch;
     get_pilot_desired_lean_angles(target_roll, target_pitch, copter.aparm.angle_max, attitude_control->get_althold_lean_angle_max_cd());
