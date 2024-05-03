@@ -1,15 +1,16 @@
 #include "Copter.h"
 #include <GCS_MAVLink/GCS.h>
+#include <AP_HAL/AP_HAL.h> // 这里加入了头文件
+
 /*
  * Init and run calls for hang flight mode
  * changed from althold, flight mode
- * writer lqd
+ * writer lqd lz
 */
 
 // althold_init - initialise althold controller
 bool ModeHang::init(bool ignore_checks)
 {
-
     // initialise the vertical position controller
     if (!pos_control->is_active_z()) {
         pos_control->init_z_controller();
@@ -23,31 +24,23 @@ bool ModeHang::init(bool ignore_checks)
 }
 
 // get the deg of sensor in centi-degs and add to target
-void ModeHang::get_add_sensor_deg(float &roll_targ,float &pitch_targ)
+void ModeHang::get_add_sensor_deg(float &roll_targ, float &pitch_targ)
 {
-
-    // throttle failsafe check
+    // Check for throttle failsafe or receiver present
     if (copter.failsafe.radio || !copter.ap.rc_receiver_present) {
         roll_targ = 0.0;
         pitch_targ = 0.0;
         return;
     }
-    //transform pilot's normalised roll or pitch stick input into a roll and pitch euler angle command
-    // read sensor deg pwm and convert
-    float roll_sensor_deg;
-    float pitch_sensor_deg;
-    //把下面这里改成读取串口读到的角度就行，赋值给roll_sensor_deg和pitch_sensor_deg
-    //rc_input_to_roll_pitch(channel_roll->get_control_in()*(1.0/ROLL_PITCH_YAW_INPUT_MAX), channel_pitch->get_control_in()*(1.0/ROLL_PITCH_YAW_INPUT_MAX), angle_max_cd * 0.01,  angle_limit_cd * 0.01, roll_out_deg, pitch_out_deg);
 
-    // Convert to centi-degrees
-    roll_sensor_deg *= 100.0;
-    pitch_sensor_deg *= 100.0;
+    // Read sensor data (assuming you have initialized and read sensor data using AP_HAL)
+    float roll_sensor_deg = AP_HAL::ToDeg(AP::ahal->sensors->get_roll());
+    float pitch_sensor_deg = AP_HAL::ToDeg(AP::ahal->sensors->get_pitch());
 
-    // add to target
-    roll_targ  +=roll_sensor_deg;
-    pitch_targ +=pitch_sensor_deg;
+    // Add sensor data to target roll and pitch 已经改成了串口读取的数据
+    roll_targ += roll_sensor_deg;
+    pitch_targ += pitch_sensor_deg;
 }
-
 
 // althold_run - runs the althold controller
 // should be called at 100hz or more
@@ -58,7 +51,7 @@ void ModeHang::run()
 
     // apply SIMPLE mode transform to pilot inputs
     update_simple_mode();
-    // gcs().send_text(MAV_SEVERITY_CRITICAL,"mode hang fly");  //地面站消息发送
+    
     // get pilot desired lean angles
     float target_roll, target_pitch;
     get_pilot_desired_lean_angles(target_roll, target_pitch, copter.aparm.angle_max, attitude_control->get_althold_lean_angle_max_cd());
@@ -122,6 +115,7 @@ void ModeHang::run()
         pos_control->set_pos_target_z_from_climb_rate_cm(target_climb_rate);
         break;
     }
+
     //for sensor
     //in centi-degrees
     // target_roll +=5;
