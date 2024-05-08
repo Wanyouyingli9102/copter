@@ -8,21 +8,7 @@
  * writer lqd lz
 */
 
-class Mode {
-public:
-    explicit Mode(Copter& copter);
-    virtual ~Mode() {}
-    virtual bool init(bool ignore_checks) = 0;
-    virtual void run() = 0;
-};
-class ModeHang : public Mode {
-public:
-    ModeHang(Copter &copter) : Mode(copter) {}
 
-    bool init(bool ignore_checks) ;
-    void run() override;
-    void get_add_sensor_deg(float &roll_targ, float &pitch_targ);
-};
 
 bool ModeHang::init(bool ignore_checks) {
     if (!copter.pos_control->is_active_z()) {
