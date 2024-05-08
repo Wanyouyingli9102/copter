@@ -2,14 +2,6 @@
 #include <GCS_MAVLink/GCS.h>
 #include <AP_AHRS/AP_AHRS.h> // 可以用传感器头文件
 
-/*
- * Init and run calls for hang flight mode
- * changed from althold, flight mode
- * writer lqd lz
-*/
-
-
-
 bool ModeHang::init(bool ignore_checks) {
     if (!copter.pos_control->is_active_z()) {
         copter.pos_control->init_z_controller();
@@ -18,6 +10,7 @@ bool ModeHang::init(bool ignore_checks) {
     copter.pos_control->set_correction_speed_accel_z(-copter.get_pilot_speed_dn(), copter.g.pilot_speed_up, copter.g.pilot_accel_z);
     return true;
 }
+
 void ModeHang::get_add_sensor_deg(float &roll_targ, float &pitch_targ) {
     if (copter.failsafe.radio || !copter.ap.rc_receiver_present) {
         roll_targ = 0.0;
@@ -25,10 +18,10 @@ void ModeHang::get_add_sensor_deg(float &roll_targ, float &pitch_targ) {
         return;
     }
 
-    // 使用AHRS获取当前飞机的姿态角度
-    const AP_AHRS &ahrs = AP::ahrs();
-    float roll_sensor_deg = degrees(ahrs.roll);
-    float pitch_sensor_deg = degrees(ahrs.pitch);
+    // 使用AP_AHRS获取当前飞机的姿态角度
+    const AP_AHRS &local_ahrs = AP::ahrs();
+    float roll_sensor_deg = degrees(local_ahrs.roll);
+    float pitch_sensor_deg = degrees(local_ahrs.pitch);
 
     // 增加从传感器读取的角度到目标角度
     roll_targ += roll_sensor_deg;
@@ -36,12 +29,9 @@ void ModeHang::get_add_sensor_deg(float &roll_targ, float &pitch_targ) {
 }
 
 void ModeHang::run() {
-    // set vertical speed and acceleration limits
     pos_control->set_max_speed_accel_z(-get_pilot_speed_dn(), g.pilot_speed_up, g.pilot_accel_z);
 
-    // apply SIMPLE mode transform to pilot inputs
     update_simple_mode();
-    // gcs().send_text(MAV_SEVERITY_CRITICAL, "Mode hang fly");  // 地面站消息发送
 
     float target_roll, target_pitch;
     get_pilot_desired_lean_angles(target_roll, target_pitch, copter.aparm.angle_max, attitude_control->get_althold_lean_angle_max_cd());
@@ -56,11 +46,11 @@ void ModeHang::run() {
         case AltHold_MotorStopped:
             attitude_control->reset_rate_controller_I_terms();
             attitude_control->reset_yaw_target_and_rate(false);
-            pos_control->relax_z_controller(0.0f);  // forces throttle output to decay to zero
+            pos_control->relax_z_controller(0.0f);
             break;
         case AltHold_Landed_Ground_Idle:
             attitude_control->reset_yaw_target_and_rate();
-            [[fallthrough]]; // C++17 attribute to indicate intentional fallthrough
+            [[fallthrough]];
         case AltHold_Landed_Pre_Takeoff:
             attitude_control->reset_rate_controller_I_terms_smoothly();
             pos_control->relax_z_controller(0.0f);
