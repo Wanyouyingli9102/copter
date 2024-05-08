@@ -1,6 +1,7 @@
 #include "Copter.h"
 #include <GCS_MAVLink/GCS.h>
-#include <AP_HAL/AP_HAL.h> // 这里加入了头文件
+#include <AP_HAL/AP_HAL.h> // AP_HAL头文件，不一定有arduino传感器需要的库
+#include <AP_Math/AP_Math.h> // 引入AP_Math头文件以使用角度转换
 
 /*
  * Init and run calls for hang flight mode
@@ -34,16 +35,15 @@ void ModeHang::get_add_sensor_deg(float &roll_targ, float &pitch_targ)
     }
 
     // Read sensor data (assuming you have initialized and read sensor data using AP_HAL)
-    float roll_sensor_deg = AP_HAL::ToDeg(AP::ahal->sensors->get_roll());
-    float pitch_sensor_deg = AP_HAL::ToDeg(AP::ahal->sensors->get_pitch());
+    float roll_sensor_deg = degrees(AP::ahal->sensors->get_roll());
+    float pitch_sensor_deg = degrees(AP::ahal->sensors->get_pitch());
 
-    // Add sensor data to target roll and pitch 已经改成了串口读取的数据
+    // Add sensor data to target roll and pitch
     roll_targ += roll_sensor_deg;
     pitch_targ += pitch_sensor_deg;
 }
 
 // althold_run - runs the althold controller
-// should be called at 100hz or more
 void ModeHang::run()
 {
     // set vertical speed and acceleration limits
@@ -51,7 +51,7 @@ void ModeHang::run()
 
     // apply SIMPLE mode transform to pilot inputs
     update_simple_mode();
-    // gcs().send_text(MAV_SEVERITY_CRITICAL,"mode hang fly");  //地面站消息发送
+
     // get pilot desired lean angles
     float target_roll, target_pitch;
     get_pilot_desired_lean_angles(target_roll, target_pitch, copter.aparm.angle_max, attitude_control->get_althold_lean_angle_max_cd());
@@ -122,7 +122,7 @@ void ModeHang::run()
     // target_pitch +=5;
 
     //add the deg from sensor
-    get_add_sensor_deg(target_roll,target_pitch);
+    get_add_sensor_deg(target_roll, target_pitch);
 
     // target_roll, target_pitch 作为目标姿态输入，默认遥控中位就是飞机水平
     // call attitude controller 这是姿态，不是海拔！！！
