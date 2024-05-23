@@ -1,9 +1,21 @@
 #include "Copter.h"
 #include <GCS_MAVLink/GCS.h>
 #include <AP_AHRS/AP_AHRS.h>
-#include <AP_SerialManager/AP_SerialManager.h> // 引入串口管理头文件
+#include <AP_SerialManager/AP_SerialManager.h>
 
 extern const AP_HAL::HAL& hal;
+
+class ModeHang : public Mode {
+public:
+    ModeHang(Copter &copter) : Mode(copter, Mode::Number::HANG) {}
+
+    bool init(bool ignore_checks) override;
+    void run() override;
+    void get_add_sensor_deg(float &roll_targ, float &pitch_targ);
+
+private:
+    AP_HAL::UARTDriver *arduino_serial;
+};
 
 bool ModeHang::init(bool ignore_checks) {
     if (!copter.pos_control->is_active_z()) {
@@ -13,7 +25,8 @@ bool ModeHang::init(bool ignore_checks) {
     copter.pos_control->set_correction_speed_accel_z(-copter.get_pilot_speed_dn(), copter.g.pilot_speed_up, copter.g.pilot_accel_z);
 
     // 初始化串口
-    hal.uartE->begin(57600);  // 使用UART E接口，并设置波特率为57600
+    arduino_serial = hal.uartE;  // 使用UART E接口
+    arduino_serial->begin(57600);  // 设置波特率为57600
     
     return true;
 }
@@ -80,12 +93,17 @@ void ModeHang::run() {
             break;
     }
 
-    // 从Arduino串口读取传感器数据
-    if (hal.uartE->available()) {
-        String data = hal.uartE->readStringUntil('\n');
-        // 假设数据格式为 "X角度: <值> Y角度: <值>"
+    // 从Arduino串口
+    if (arduino_serial->available()) {
+        char buffer[50];
+        size_t len = arduino_serial->read(buffer, sizeof(buffer) - 1);
+        buffer[len] = '\0'; 
+        String data = buffer;
+
+        // 数据格式为 "X角度: <值> Y角度: <值>"
         float x_angle = data.substring(data.indexOf("X角度: ") + 6, data.indexOf(" Y角度: ")).toFloat();
         float y_angle = data.substring(data.indexOf("Y角度: ") + 6).toFloat();
+        
         // 使用角度数据
         target_roll += x_angle;
         target_pitch += y_angle;
