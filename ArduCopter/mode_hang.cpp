@@ -45,9 +45,19 @@ void ModeHang::get_add_sensor_deg(float &roll_targ,float &pitch_targ)
     
     roll_sensor_deg=(float)(pwm_sensor_read-50)*0.9;
     // hal.console->printf("%5f ", roll_sensor_deg);
-#define SENSOR_INDEX 0.1
+    
+#define SENSOR_INDEX 0.5
 
     roll_sensor_deg *=SENSOR_INDEX;
+
+#define SENSOR_DEG_MAX 4
+
+    if(roll_sensor_deg>=SENSOR_DEG_MAX){
+        roll_sensor_deg=SENSOR_DEG_MAX;
+    }
+    if(roll_sensor_deg<=-SENSOR_DEG_MAX){
+        roll_sensor_deg=-SENSOR_DEG_MAX;
+    }
 
     //调试用的
     // for (uint8_t i=0; i<9; i++) {
