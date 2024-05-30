@@ -64,6 +64,16 @@
     "fstream": "cpp",
     "istream": "cpp",
     "ostream": "cpp",
-    "sstream": "cpp"
+    "sstream": "cpp",
+    "*.ipp": "cpp",
+    "bitset": "cpp",
+    "optional": "cpp",
+    "functional": "cpp",
+    "future": "cpp",
+    "iosfwd": "cpp",
+    "stdexcept": "cpp",
+    "core": "cpp",
+    "*.txx": "cpp",
+    "string": "cpp"
   }
 }

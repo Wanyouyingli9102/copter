@@ -34,11 +34,29 @@ void ModeHang::get_add_sensor_deg(float &roll_targ,float &pitch_targ)
     }
     //transform pilot's normalised roll or pitch stick input into a roll and pitch euler angle command
     // read sensor deg pwm and convert
-    float roll_sensor_deg;
-    float pitch_sensor_deg;
+    float roll_sensor_deg=0;
+    float pitch_sensor_deg=0;
     //把下面这里改成读取串口读到的角度就行，赋值给roll_sensor_deg和pitch_sensor_deg
     //rc_input_to_roll_pitch(channel_roll->get_control_in()*(1.0/ROLL_PITCH_YAW_INPUT_MAX), channel_pitch->get_control_in()*(1.0/ROLL_PITCH_YAW_INPUT_MAX), angle_max_cd * 0.01,  angle_limit_cd * 0.01, roll_out_deg, pitch_out_deg);
+    
 
+    int16_t pwm_sensor_read = rc().channel(CH_6)->percent_input();
+    // hal.console->printf("%5d ", pwm_sensor_read);
+    
+    roll_sensor_deg=(float)(pwm_sensor_read-50)*0.9;
+    // hal.console->printf("%5f ", roll_sensor_deg);
+#define SENSOR_INDEX 0.1
+
+    roll_sensor_deg *=SENSOR_INDEX;
+
+    //调试用的
+    // for (uint8_t i=0; i<9; i++) {
+	//     // hal.console->printf("%5d ", (int)rc().channel(i)->get_control_in());
+	//     hal.console->printf("%5d ", (int)rc().channel(i)->percent_input());
+    // }
+    // hal.console->printf("\n");
+
+    
     // Convert to centi-degrees
     roll_sensor_deg *= 100.0;
     pitch_sensor_deg *= 100.0;
