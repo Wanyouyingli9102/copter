@@ -46,7 +46,7 @@ void ModeHang::get_add_sensor_deg(float &roll_targ,float &pitch_targ)
     roll_sensor_deg=(float)(pwm_sensor_read-50)*0.9;
     // hal.console->printf("%5f ", roll_sensor_deg);
     
-#define SENSOR_INDEX 0.5
+#define SENSOR_INDEX 0.1
 
     roll_sensor_deg *=SENSOR_INDEX;
 
